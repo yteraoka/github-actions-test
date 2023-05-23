@@ -29,9 +29,15 @@ jobs:
           echo "${GITHUB_CONTEXT}"
 
   test:
+    # 手動実行の場合は実行しない
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    name: test
+    uses: ./.github/workflows/reusable-test.yml
+
+  gentag:
     # Pull Request の close 時は merge された場合だけ実行
     #if: ${{ github.event.pull_request.state != 'closed' || github.event.pull_request.merged == true }}
-    name: test
+    name: Generate image tag
     runs-on: ubuntu-latest
     outputs:
       image-tag: ${{ steps.image-tag.outputs.tag-name }}
@@ -60,6 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - gentag
     if: contains(github.event.pull_request.labels.*.name, 'PReview')
     steps:
       - run: |
@@ -70,6 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - gentag
     steps:
       - run: |
           echo "deploy 中..."
@@ -85,7 +93,7 @@ jobs:
     name: debug 2
     runs-on: ubuntu-latest
     needs:
-      - test
+      - gentag
       - deploy
     if: ${{ failure() }}
     steps:
@@ -97,11 +105,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - gentag
       - deploy
     steps:
       - name: print image-tag
         run: |
-          echo "${{ needs.test.outputs.image-tag }}"
+          echo "${{ needs.gentag.outputs.image-tag }}"
       - run: |
           echo "後片付け中"
           sleep 2
