@@ -55,3 +55,23 @@ jobs:
     steps:
       - run: |
           echo "debug"
+
+  cleanup:
+    name: cleanup
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - deploy
+    steps:
+      - run: |
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "完了"
