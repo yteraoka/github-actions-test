@@ -30,6 +30,16 @@ jobs:
         run: |
           echo "step 1"
 
+  deploy-review:
+    name: PR Review 環境の deploy
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    if: contains(github.event.pull_request.labels.*.name, 'PReview')
+    steps:
+      - run: |
+          echo "Doing PR Review deploy"
+
   deploy:
     name: dev 環境への deploy
     runs-on: ubuntu-latest
