@@ -33,6 +33,8 @@ jobs:
   deploy:
     name: dev 環境への deploy
     runs-on: ubuntu-latest
+    needs:
+      - test
     steps:
       - run: |
           echo "deploy 中..."
@@ -42,3 +44,14 @@ jobs:
           echo "deploy 中..."
           sleep 1
           echo "deploy 完了"
+
+  debug:
+    name: debug
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - deploy
+    if: ${{ failure() }}
+    steps:
+      - run: |
+          echo "debug"
