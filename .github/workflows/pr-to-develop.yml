@@ -1,6 +1,6 @@
-name: My Workflow Name
+name: dev 環境への deploy
 
-run-name: "Customized Run Name for ${{ github.workflow }} by @${{ github.actor }}"
+run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
 
 on:
   workflow_dispatch:
@@ -14,14 +14,92 @@ on:
     branches:
       - develop
 
+concurrency:
+  group: deploy-develop
+  cancel-in-progress: false
+
 jobs:
   test:
     name: test 1
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.image-tag.outputs.tag-name }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: test step 1
+      - name: Generate image tags
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: "asia-docker.pkg.dev/myproject/myrepo/myimage"
+          tags: |
+            type=ref,priority=1200,event=tag
+            type=ref,event=pr
+            type=sha,priority=1100
+
+      - name: output tag name
+        id: image-tag
         run: |
           echo "step 1"
+          echo "tag-name=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
+
+  deploy-review:
+    name: PR Review 環境の deploy
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    if: contains(github.event.pull_request.labels.*.name, 'PReview')
+    steps:
+      - run: |
+          echo "Doing PR Review deploy"
+
+  deploy:
+    name: dev 環境への deploy
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - run: |
+          echo "deploy 中..."
+          sleep 1
+          echo "deploy 中..."
+          sleep 1
+          echo "deploy 中..."
+          sleep 1
+          echo "deploy 完了"
+          #exit 1
+
+  debug:
+    name: debug
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - deploy
+    if: ${{ failure() }}
+    steps:
+      - run: |
+          echo "debug"
+
+  cleanup:
+    name: cleanup
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - deploy
+    steps:
+      - name: print image-tag
+        run: |
+          echo "${{ needs.test.outputs.image-tag }}"
+      - run: |
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "後片付け中"
+          sleep 2
+          echo "完了"
