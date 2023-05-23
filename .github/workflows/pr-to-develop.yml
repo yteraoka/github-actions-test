@@ -67,7 +67,7 @@ jobs:
     needs:
       - test
       - gentag
-    if: contains(github.event.pull_request.labels.*.name, 'PReview')
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'PReview') && !canceled() && !failure() }}
     steps:
       - run: |
           echo "Doing PR Review deploy"
@@ -78,6 +78,8 @@ jobs:
     needs:
       - test
       - gentag
+    # test に依存するが、スキップした場合は実行
+    if: ${{ !canceled() && !failure() }}
     steps:
       - run: |
           echo "deploy 中..."
@@ -107,6 +109,8 @@ jobs:
       - test
       - gentag
       - deploy
+    # test に依存するが skip してても実行
+    if: always()
     steps:
       - name: print image-tag
         run: |
