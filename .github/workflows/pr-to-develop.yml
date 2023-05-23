@@ -1,6 +1,6 @@
 name: My Workflow Name
 
-run-name: "Customized Run Name for ${{ github.workflow }} by @${{ github.actor }}"
+run-name: "develop branch への変更に対する workflow for ${{ github.workflow }} by @${{ github.actor }}"
 
 on:
   workflow_dispatch:
