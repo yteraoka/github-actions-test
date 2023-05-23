@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened, labeled] # label を外した時は `unlabeled`
     branches:
       - develop
 
