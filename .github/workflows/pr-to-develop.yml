@@ -44,7 +44,7 @@ jobs:
           echo "deploy 中..."
           sleep 1
           echo "deploy 完了"
-          exit 1
+          #exit 1
 
   debug:
     name: debug
