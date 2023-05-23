@@ -18,6 +18,20 @@ jobs:
         run: |
           echo "${GITHUB_CONTEXT}"
 
+  merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "マージしました"
+
+  not_merged:
+    if: github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "マージされませんでした"
+
   cleanup_1:
     runs-on: ubuntu-latest
     name: 掃除 その1
