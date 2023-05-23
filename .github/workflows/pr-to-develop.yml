@@ -22,13 +22,27 @@ jobs:
   test:
     name: test 1
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.image-tag.outputs.tag-name }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: test step 1
+      - name: Generate image tags
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: "asia-docker.pkg.dev/myproject/myrepo/myimage"
+          tags: |
+            type=ref,priority=1200,event=tag
+            type=ref,event=pr
+            type=sha,priority=1100
+
+      - name: output tag name
+        id: image-tag
         run: |
           echo "step 1"
+          echo "tag-name=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
 
   deploy:
     name: dev 環境への deploy
@@ -64,6 +78,9 @@ jobs:
       - test
       - deploy
     steps:
+      - name: print image-tag
+        run: |
+          echo "${{ needs.test.outputs.image-tag }}"
       - run: |
           echo "後片付け中"
           sleep 2
