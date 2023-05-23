@@ -9,6 +9,15 @@ on:
       - develop
 
 jobs:
+  debug1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: dump variables
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "${GITHUB_CONTEXT}"
+
   cleanup_1:
     runs-on: ubuntu-latest
     name: 掃除 その1
