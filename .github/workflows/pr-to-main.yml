@@ -1,41 +1,27 @@
-name: My Main Branch Workflow Name
+name: main branch への Pull Request
 
-run-name: "Customized Run Name for ${{ github.workflow }} by @${{ github.actor }}"
+#run-name: "${{ github.workflow }} by @${{ github.actor }}"
 
 on:
-  workflow_dispatch:
-
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - main
 
-  push:
-    branches:
-      - main
-
 jobs:
-  job_1:
-    name: Job 1
+  lint:
+    name: lint 1
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: test step 1
+      - name: lint step 1
         run: |
-          echo "step 1"
+          echo "lint 1"
 
-      - name: test step 2
-        run: |
-          echo "step 2"
-
-      - name: test step 3
-        run: |
-          echo "step 3"
-
-  job_2:
-    name: Job 2
+  test:
+    name: test 1
     runs-on: ubuntu-latest
     steps:
       - name: checkout
