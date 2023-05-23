@@ -1,12 +1,12 @@
 name: dev 環境への deploy
 
-run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
+#run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
 
 on:
   workflow_dispatch:
 
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
     branches:
       - develop
 
@@ -29,6 +29,8 @@ jobs:
           echo "${GITHUB_CONTEXT}"
 
   test:
+    # Pull Request の close 時は merge された場合だけ実行
+    if: ${{ github.event.pull_request.state != 'closed' || github.event.pull_request.merged == true }}
     name: test 1
     runs-on: ubuntu-latest
     outputs:
