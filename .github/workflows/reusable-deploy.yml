@@ -45,6 +45,7 @@ jobs:
       - name: Generate image tag
         id: meta
         uses: docker/metadata-action@v4
+        with:
           images: "asia-docker.pkg.dev/steps.auth.outputs.project_id/myapp-${{ inputs.env }}/myapp"
           tags: |
             type=ref,priority=1200,event=tag
