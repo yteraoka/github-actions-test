@@ -27,4 +27,4 @@ jobs:
           sleep 5
       - name: sleep 5
         run: |
-          sleep 5
+          sleep 6
