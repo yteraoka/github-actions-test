@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
   pull_request:
-    types: [opened, synchronize, reopened, labeled] # label を外した時は `unlabeled`
+    types: [opened, synchronize, reopened, labeled, ready_for_review] # label を外した時は `unlabeled`
     branches:
       - develop
 
@@ -15,7 +15,7 @@ on:
       - develop
 
 concurrency:
-  group: deploy-develop
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -79,7 +79,7 @@ jobs:
       - test
       - gentag
     # test に依存するが、スキップした場合は実行
-    if: ${{ !cancelled() && !failure() }}
+    if: ${{ github.event.pull_request.draft == false && !cancelled() && !failure() }}
     # always() &&
     # needs.gentag.result == 'success' &&
     # (needs.test.result == 'success' || needs.test.result == 'skipped')
@@ -122,10 +122,6 @@ jobs:
         run: |
           echo "${{ needs.gentag.outputs.image-tag }}"
       - run: |
-          echo "後片付け中"
-          sleep 2
-          echo "後片付け中"
-          sleep 2
           echo "後片付け中"
           sleep 2
           echo "後片付け中"
