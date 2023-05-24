@@ -28,12 +28,14 @@ jobs:
 
   test:
     # 手動実行の場合は実行しない
-    if: ${{ github.event_name != 'workflow_dispatch' }}
+    #if: ${{ github.event_name != 'workflow_dispatch' }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-test
       cancel-in-progress: true
     name: test
     uses: ./.github/workflows/reusable-test.yml
+    with:
+      skip: ${{ github.event_name == 'workflow_dispatch' }}
 
   gentag:
     # Pull Request の close 時は merge された場合だけ実行
