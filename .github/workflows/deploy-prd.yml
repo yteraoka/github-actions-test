@@ -1,0 +1,21 @@
+name: production 環境への deploy
+
+# tag が push されたら production 環境に deploy する
+# tag の naming rule があれば条件を合わせる
+on:
+  push:
+    tag:
+      - '*'
+
+jobs:
+  deploy:
+    name: Deploy to production
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
+      service-account: myaccount
+      env: prd
+    # deploy 処理は同時実行はさせない
+    concurrency:
+      group: deploy-prd
+      cancel-in-progress: false

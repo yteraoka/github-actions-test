@@ -1,0 +1,20 @@
+name: staging 環境への deploy
+
+# main branch に push されたら staging 環境に deploy する
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to staging
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
+      service-account: myaccount
+      env: stg
+    # deploy 処理は同時実行はさせない
+    concurrency:
+      group: deploy-stg
+      cancel-in-progress: false
