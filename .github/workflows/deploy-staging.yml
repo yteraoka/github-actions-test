@@ -1,10 +1,8 @@
-name: main branch への Pull Request
+name: staging 環境への deploy
 
-#run-name: "${{ github.workflow }} by @${{ github.actor }}"
-
+# main branch に push されたら staging 環境に deploy する
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
     branches:
       - main
 
