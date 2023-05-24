@@ -2,9 +2,15 @@ name: Test
 
 on:
   workflow_call:
+    inputs:
+      skip:
+        description: 'skip test if true'
+        type: boolean
+        default: false
 
 jobs:
   test:
+    if: inputs.skip == false
     name: Test
     runs-on: ubuntu-latest
     steps:
