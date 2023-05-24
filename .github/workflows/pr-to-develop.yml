@@ -15,7 +15,7 @@ on:
       - develop
 
 concurrency:
-  group: deploy-develop
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
