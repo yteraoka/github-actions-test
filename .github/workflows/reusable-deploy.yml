@@ -1,0 +1,174 @@
+name: Reusable deploy workflow
+
+on:
+  workflow_call:
+    inputs:
+      workload-identity-provider:
+        required: true
+        type: string
+      service-account:
+        required: true
+        type: string
+      env:
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    name: Build and push image
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+      id-token: write
+
+    outputs:
+      image-tag: ${{ steps.image-tag.outputs.tag-name }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        run: |
+          echo "google-github-actions/auth@v0"
+          echo "workload_identity_provider: ${{ inputs.workload-identity-provider }}"
+          echo "service_account: ${{ inputs.service-account }}"
+
+      - name: Loging to Artifact Registry
+        run: |
+          echo "uses: docker/login-action@v2"
+          echo "registry: asia-docker.pkg.dev"
+          echo "username: oauth2accesstoken"
+          echo "password: steps.auth.outputs.access_token"
+
+      - name: Generate image tag
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: "asia-docker.pkg.dev/steps.auth.outputs.project_id/myapp-${{ inputs.env }}/myapp"
+          tags: |
+            type=ref,priority=1200,event=tag
+            type=ref,event=pr
+            type=sha,priority=1100
+
+      # metadata-action の最も priority の大きい tag が version として入っている
+      - name: image tag for deploy
+        id: image-tag
+        run: |
+          echo "tag-name=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+
+  # Cloud Run Jobs で実行
+  collect-static:
+    name: Django Collect Static
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+    needs:
+      - build-and-push
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        run: |
+          echo "google-github-actions/auth@v0"
+          echo "workload_identity_provider: ${{ inputs.workload-identity-provider }}"
+          echo "service_account: ${{ inputs.service-account }}"
+
+      # 元々入っている gcloud コマンドは古いので新しい version をインストール
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+        with:
+          install_components: beta
+
+      - name: Use gcloud CLI
+        run: |
+          gcloud info
+
+
+  # Cloud Run Jobs で実行
+  db-migrate:
+    name: Django DB Migration
+
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    needs:
+      - build-and-push
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        run: |
+          echo "google-github-actions/auth@v0"
+          echo "workload_identity_provider: ${{ inputs.workload-identity-provider }}"
+          echo "service_account: ${{ inputs.service-account }}"
+
+      # 元々入っている gcloud コマンドは古いので新しい version をインストール
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+        with:
+          install_components: beta
+
+      - name: Use gcloud CLI
+        run: |
+          gcloud info
+
+  deploy:
+    name: Deploy or update Cloud Run Service
+
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+      id-token: write
+
+    needs:
+      - build-and-push
+      - db-migrate
+      - collect-static
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        run: |
+          echo "google-github-actions/auth@v0"
+          echo "workload_identity_provider: ${{ inputs.workload-identity-provider }}"
+          echo "service_account: ${{ inputs.service-account }}"
+
+      # 元々入っている gcloud コマンドは古いので新しい version をインストール
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+        with:
+          install_components: beta
+
+      - name: Deploy or update cloud run service
+        run: |
+          gcloud info
+
+      - name: Add URL to summary
+        run: |
+          echo "### ${{ inputs.env }} 環境にデプロイしたよ! :rocket:" >> $GITHUB_STEP_SUMMARY

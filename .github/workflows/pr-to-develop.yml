@@ -15,131 +15,147 @@ on:
       - develop
 
 jobs:
-  debug1:
-    name: debug
-    runs-on: ubuntu-latest
-    steps:
-      - name: dump variables
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "${GITHUB_CONTEXT}"
-          echo "::debug::これは debug メッセージです"
+#  debug1:
+#    name: debug
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: dump variables
+#        env:
+#          GITHUB_CONTEXT: ${{ toJson(github) }}
+#        run: |
+#          echo "${GITHUB_CONTEXT}"
+#          echo "::debug::これは debug メッセージです"
 
   test:
     # 手動実行の場合は実行しない
-    #if: ${{ github.event_name != 'workflow_dispatch' }}
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-test
       cancel-in-progress: true
     name: test
     uses: ./.github/workflows/reusable-test.yml
-    with:
-      skip: ${{ github.event_name == 'workflow_dispatch' }}
-
-  gentag:
-    # Pull Request の close 時は merge された場合だけ実行
-    #if: ${{ github.event.pull_request.state != 'closed' || github.event.pull_request.merged == true }}
-    name: Generate image tag
-    runs-on: ubuntu-latest
-    outputs:
-      image-tag: ${{ steps.image-tag.outputs.tag-name }}
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: Generate image tags
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: "asia-docker.pkg.dev/myproject/myrepo/myimage"
-          tags: |
-            type=ref,priority=1200,event=tag
-            type=ref,event=pr
-            type=sha,priority=1100
-
-      - name: output tag name
-        id: image-tag
-        run: |
-          echo "step 1"
-          echo "tag-name=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
-          echo "::notice::notice message です"
-
-  deploy-review:
-    name: PR Review 環境の deploy
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}
-      cancel-in-progress: false
-    runs-on: ubuntu-latest
-    needs:
-      - test
-      - gentag
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'PReview') && !cancelled() && !failure() }}
-    steps:
-      - run: |
-          echo "Doing PR Review deploy"
 
   deploy:
-    name: dev 環境への deploy
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}
-      cancel-in-progress: false
-    runs-on: ubuntu-latest
+    name: Deploy to dev
     needs:
       - test
-      - gentag
-    # test に依存するが、スキップした場合は実行
-    #if: ${{ github.event.pull_request.draft == false && !cancelled() && !failure() }}
     if: |
       always() &&
       github.event.pull_request.draft == false &&
-      needs.gentag.result == 'success' &&
       (needs.test.result == 'success' || needs.test.result == 'skipped')
-    steps:
-      - run: |
-          echo "deploy 中..."
-          sleep 1
-          echo "deploy 中..."
-          sleep 1
-          echo "deploy 中..."
-          echo "::error::error message です"
-          sleep 1
-          echo "deploy 完了"
-          echo "::warning::warning message です"
-          #exit 1
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
+      service-account: myaccount
+      env: dev
+    # deploy 処理は同時実行はさせない
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: false
 
-  debug2:
-    name: debug 2
-    runs-on: ubuntu-latest
-    needs:
-      - gentag
-      - deploy
-    if: ${{ failure() }}
-    steps:
-      - run: |
-          echo "debug"
-
-  cleanup:
-    name: cleanup
-    runs-on: ubuntu-latest
-    needs:
-      - test
-      - gentag
-      - deploy
-    # test に依存するが skip してても実行
-    if: ${{ !cancelled() && !failure() }}
-    # always() &&
-    # needs.gentag.result == 'success' &&
-    # (needs.test.result == 'success' || needs.test.result == 'skipped')
-    steps:
-      - name: print image-tag
-        run: |
-          echo "${{ needs.gentag.outputs.image-tag }}"
-      - run: |
-          echo "後片付け中"
-          sleep 2
-          echo "後片付け中"
-          sleep 2
-          echo "後片付け中"
-          sleep 2
-          echo "完了"
+#  gentag:
+#    # Pull Request の close 時は merge された場合だけ実行
+#    #if: ${{ github.event.pull_request.state != 'closed' || github.event.pull_request.merged == true }}
+#    name: Generate image tag
+#    runs-on: ubuntu-latest
+#    outputs:
+#      image-tag: ${{ steps.image-tag.outputs.tag-name }}
+#    steps:
+#      - name: checkout
+#        uses: actions/checkout@v3
+#
+#      - name: Generate image tags
+#        id: meta
+#        uses: docker/metadata-action@v4
+#        with:
+#          images: "asia-docker.pkg.dev/myproject/myrepo/myimage"
+#          tags: |
+#            type=ref,priority=1200,event=tag
+#            type=ref,event=pr
+#            type=sha,priority=1100
+#
+#      - name: output tag name
+#        id: image-tag
+#        run: |
+#          echo "step 1"
+#          echo "tag-name=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
+#          echo "::notice::notice message です"
+#
+#  deploy-review:
+#    name: PR Review 環境の deploy
+#    concurrency:
+#      group: ${{ github.workflow }}-${{ github.job }}
+#      cancel-in-progress: false
+#    runs-on: ubuntu-latest
+#    needs:
+#      - test
+#      - gentag
+#    if: ${{ contains(github.event.pull_request.labels.*.name, 'PReview') && !cancelled() && !failure() }}
+#    steps:
+#      - run: |
+#          echo "Doing PR Review deploy"
+#
+#  deploy:
+#    name: dev 環境への deploy
+#    concurrency:
+#      group: ${{ github.workflow }}-${{ github.job }}
+#      cancel-in-progress: false
+#    runs-on: ubuntu-latest
+#    needs:
+#      - test
+#      - gentag
+#    # test に依存するが、スキップした場合は実行
+#    #if: ${{ github.event.pull_request.draft == false && !cancelled() && !failure() }}
+#    if: |
+#      always() &&
+#      github.event.pull_request.draft == false &&
+#      needs.gentag.result == 'success' &&
+#      (needs.test.result == 'success' || needs.test.result == 'skipped')
+#    steps:
+#      - run: |
+#          echo "deploy 中..."
+#          sleep 1
+#          echo "deploy 中..."
+#          sleep 1
+#          echo "deploy 中..."
+#          echo "::error::error message です"
+#          sleep 1
+#          echo "deploy 完了"
+#          echo "::warning::warning message です"
+#          #exit 1
+#
+#  debug2:
+#    name: debug 2
+#    runs-on: ubuntu-latest
+#    needs:
+#      - gentag
+#      - deploy
+#    if: ${{ failure() }}
+#    steps:
+#      - run: |
+#          echo "debug"
+#
+#  cleanup:
+#    name: cleanup
+#    runs-on: ubuntu-latest
+#    needs:
+#      - test
+#      - gentag
+#      - deploy
+#    # test に依存するが skip してても実行
+#    if: ${{ !cancelled() && !failure() }}
+#    # always() &&
+#    # needs.gentag.result == 'success' &&
+#    # (needs.test.result == 'success' || needs.test.result == 'skipped')
+#    steps:
+#      - name: print image-tag
+#        run: |
+#          echo "${{ needs.gentag.outputs.image-tag }}"
+#      - run: |
+#          echo "後片付け中"
+#          sleep 2
+#          echo "後片付け中"
+#          sleep 2
+#          echo "後片付け中"
+#          sleep 2
+#          echo "完了"
