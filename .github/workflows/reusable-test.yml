@@ -13,3 +13,27 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.10.5
+      - name: sleep 1
+        run: |
+          echo "::group::my group"
+          echo "begin sleep"
+          sleep 5
+          echo "end sleep"
+          echo "::endgroup::"
+          echo "sleep 1 step 終わったよ" >> $GITHUB_STEP_SUMMARY
+      - name: sleep 2
+        run: |
+          sleep 5
+          echo "sleep 2 step 終わったよ" >> $GITHUB_STEP_SUMMARY
+      - name: sleep 3
+        run: |
+          sleep 5
+          echo "sleep 3 step 終わったよ" >> $GITHUB_STEP_SUMMARY
+      - name: sleep 4
+        run: |
+          sleep 5
+          echo "sleep 4 step 終わったよ" >> $GITHUB_STEP_SUMMARY
+      - name: sleep 5
+        run: |
+          sleep 5
+          echo "sleep 5 step 終わったよ" >> $GITHUB_STEP_SUMMARY
