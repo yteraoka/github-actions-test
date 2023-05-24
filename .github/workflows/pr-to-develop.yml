@@ -24,6 +24,7 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           echo "${GITHUB_CONTEXT}"
+          echo "::debug::これは debug メッセージです"
 
   test:
     # 手動実行の場合は実行しない
@@ -60,6 +61,7 @@ jobs:
         run: |
           echo "step 1"
           echo "tag-name=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
+          echo "::notice::notice message です"
 
   deploy-review:
     name: PR Review 環境の deploy
@@ -98,8 +100,10 @@ jobs:
           echo "deploy 中..."
           sleep 1
           echo "deploy 中..."
+          echo "::error::error message です"
           sleep 1
           echo "deploy 完了"
+          echo "::warning::warning message です"
           #exit 1
 
   debug2:
