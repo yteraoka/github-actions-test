@@ -1,7 +1,6 @@
-name: main branch への Pull Request
+name: test
 
-#run-name: "${{ github.workflow }} by @${{ github.actor }}"
-
+# main branch への Pull Request 時に実行
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -9,32 +8,9 @@ on:
       - main
 
 jobs:
-  lint:
-    name: lint 1
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: lint step 1
-        run: |
-          echo "lint 1"
-
   test:
-    name: test 1
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: test step 1
-        run: |
-          echo "step 1"
-
-      - name: test step 2
-        run: |
-          echo "step 2"
-
-      - name: test step 3
-        run: |
-          echo "step 3"
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-test
+      cancel-in-progress: true
+    name: test
+    uses: ./.github/workflows/reusable-test.yml
