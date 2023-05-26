@@ -1,0 +1,15 @@
+name: test
+
+on:
+  pull_request: [opened, synchronize, reopened]
+    branches:
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/reusable-test.yml

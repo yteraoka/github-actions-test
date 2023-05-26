@@ -5,11 +5,6 @@ name: dev 環境への deploy
 on:
   workflow_dispatch:
 
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, ready_for_review] # label を外した時は `unlabeled`
-    branches:
-      - develop
-
   push:
     branches:
       - develop
@@ -48,7 +43,6 @@ jobs:
         service-name: [frontend, hosting]
     if: |
       always() &&
-      github.event.pull_request.draft == false &&
       (needs.test.result == 'success' || needs.test.result == 'skipped')
     uses: ./.github/workflows/reusable-deploy.yml
     with:
