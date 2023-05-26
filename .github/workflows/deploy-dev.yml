@@ -39,6 +39,9 @@ jobs:
     name: Deploy to dev
     needs:
       - test
+    strategy:
+      matrix:
+        service-name: [frontend, hosting]
     if: |
       always() &&
       github.event.pull_request.draft == false &&

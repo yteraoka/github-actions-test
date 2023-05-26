@@ -11,6 +11,9 @@ jobs:
   deploy:
     name: Deploy to production
     uses: ./.github/workflows/reusable-deploy.yml
+    strategy:
+      matrix:
+        service-name: [frontend, hosting]
     with:
       workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
       service-account: myaccount
