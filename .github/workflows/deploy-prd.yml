@@ -18,6 +18,7 @@ jobs:
       workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
       service-account: myaccount
       env: prd
+      service-name: ${{ matrix.service-name }}
     # deploy 処理は同時実行はさせない
     concurrency:
       group: deploy-prd
