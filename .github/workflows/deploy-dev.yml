@@ -14,6 +14,10 @@ on:
     branches:
       - develop
 
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
 jobs:
 #  debug1:
 #    name: debug
@@ -52,10 +56,6 @@ jobs:
       service-account: myaccount
       env: dev
       service-name: ${{ matrix.service-name }}
-    # deploy 処理は同時実行はさせない
-    concurrency:
-      group: deploy-dev
-      cancel-in-progress: false
 
 #  gentag:
 #    # Pull Request の close 時は merge された場合だけ実行
