@@ -1,5 +1,7 @@
 name: test
 
+run-name: "${{ github.workflow }} on ${{ github.ref }}"
+
 on:
   pull_request:
     branches:
