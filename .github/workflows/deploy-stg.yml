@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy-stg
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to staging
@@ -18,7 +22,3 @@ jobs:
       service-account: myaccount
       env: stg
       service-name: ${{ matrix.service-name }}
-    # deploy 処理は同時実行はさせない
-    concurrency:
-      group: deploy-stg
-      cancel-in-progress: false
