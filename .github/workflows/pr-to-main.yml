@@ -1,5 +1,7 @@
 name: test
 
+run-name: "${{ github.workflow }} on ${{ github.ref }}"
+
 # main branch への Pull Request 時に実行
 on:
   workflow_run:
