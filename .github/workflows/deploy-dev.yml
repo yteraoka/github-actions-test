@@ -14,6 +14,10 @@ on:
     branches:
       - develop
 
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
 jobs:
 #  debug1:
 #    name: debug
@@ -39,6 +43,9 @@ jobs:
     name: Deploy to dev
     needs:
       - test
+    strategy:
+      matrix:
+        service-name: [frontend, hosting]
     if: |
       always() &&
       github.event.pull_request.draft == false &&
@@ -48,10 +55,7 @@ jobs:
       workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
       service-account: myaccount
       env: dev
-    # deploy 処理は同時実行はさせない
-    concurrency:
-      group: deploy-dev
-      cancel-in-progress: false
+      service-name: ${{ matrix.service-name }}
 
 #  gentag:
 #    # Pull Request の close 時は merge された場合だけ実行
