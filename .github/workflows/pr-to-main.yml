@@ -1,16 +1,16 @@
 name: test
 
+run-name: "${{ github.workflow }} on ${{ github.ref }}"
+
 # main branch への Pull Request 時に実行
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - git-pr-release
+    types:
+      - completed
 
 jobs:
   test:
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-test
-      cancel-in-progress: true
-    name: test
+    name: Test
     uses: ./.github/workflows/reusable-test.yml

@@ -7,15 +7,19 @@ on:
     tags:
       - '*'
 
+concurrency:
+  group: deploy-prd
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to production
     uses: ./.github/workflows/reusable-deploy.yml
+    strategy:
+      matrix:
+        service-name: [frontend, hosting]
     with:
       workload-identity-provider: projects/123/locations/global/workloadIdentityPools/pool/providers/gha
       service-account: myaccount
       env: prd
-    # deploy 処理は同時実行はさせない
-    concurrency:
-      group: deploy-prd
-      cancel-in-progress: false
+      service-name: ${{ matrix.service-name }}
