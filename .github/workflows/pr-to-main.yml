@@ -1,4 +1,4 @@
-name: test
+name: test-release-branch
 
 run-name: "${{ github.workflow }} on ${{ github.ref }}"
 

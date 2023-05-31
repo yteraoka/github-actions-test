@@ -1,4 +1,4 @@
-name: staging 環境への deploy
+name: deploy-stg
 
 # main branch に push されたら staging 環境に deploy する
 on:

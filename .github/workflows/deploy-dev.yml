@@ -1,4 +1,4 @@
-name: dev 環境への deploy
+name: deploy-dev
 
 #run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
 

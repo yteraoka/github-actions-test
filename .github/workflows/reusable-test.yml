@@ -1,4 +1,4 @@
-name: Test
+name: reusable-test
 
 on:
   workflow_call:
