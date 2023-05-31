@@ -1,4 +1,4 @@
-name: staging 環境への deploy
+name: deploy-stg
 
 # main branch に push されたら staging 環境に deploy する
 on:
@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to staging
     uses: ./.github/workflows/reusable-deploy.yml
     strategy:
       matrix:

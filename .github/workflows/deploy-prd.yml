@@ -1,4 +1,4 @@
-name: production 環境への deploy
+name: deploy-prd
 
 # tag が push されたら production 環境に deploy する
 # tag の naming rule があれば条件を合わせる
@@ -13,7 +13,6 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to production
     uses: ./.github/workflows/reusable-deploy.yml
     strategy:
       matrix:

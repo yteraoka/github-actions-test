@@ -1,4 +1,4 @@
-name: dev 環境への deploy
+name: deploy-dev
 
 #run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
 
@@ -35,7 +35,6 @@ jobs:
     uses: ./.github/workflows/reusable-test.yml
 
   deploy:
-    name: Deploy to dev
     needs:
       - test
     strategy:
