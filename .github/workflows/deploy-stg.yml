@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to staging
     uses: ./.github/workflows/reusable-deploy.yml
     strategy:
       matrix:
