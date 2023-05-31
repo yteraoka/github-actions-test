@@ -1,5 +1,7 @@
 name: deploy-dev
 
+# develop branch に merge したら dev 環境にdeploy する
+
 #run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
 
 on:
