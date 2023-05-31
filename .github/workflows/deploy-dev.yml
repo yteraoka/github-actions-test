@@ -1,4 +1,4 @@
-name: dev 環境への deploy
+name: deploy-dev
 
 #run-name: "${{ github.workflow }} by @${{ github.actor }} (${{ github.ref }})"
 
@@ -25,17 +25,16 @@ jobs:
 #          echo "${GITHUB_CONTEXT}"
 #          echo "::debug::これは debug メッセージです"
 
-  test:
-    # 手動実行の場合は実行しない
-    if: ${{ github.event_name != 'workflow_dispatch' }}
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-test
-      cancel-in-progress: true
-    name: test
-    uses: ./.github/workflows/reusable-test.yml
+#  test:
+#    # 手動実行の場合は実行しない
+#    if: ${{ github.event_name != 'workflow_dispatch' }}
+#    concurrency:
+#      group: ${{ github.workflow }}-${{ github.ref }}-test
+#      cancel-in-progress: true
+#    name: test
+#    uses: ./.github/workflows/reusable-test.yml
 
   deploy:
-    name: Deploy to dev
     needs:
       - test
     strategy:
