@@ -43,6 +43,7 @@ jobs:
               --body "pr commit not found"
           fi
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_PR_RELEASE_BRANCH_PRODUCTION: ${{ env.branch_production }}
           GIT_PR_RELEASE_BRANCH_STAGING: ${{ env.branch_staging }}
