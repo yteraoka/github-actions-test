@@ -11,4 +11,5 @@ Workflow 内で write 操作や Pull Request を作成したり承認したり�
 で `Read and write permissions` を選択し、
 `Allow GitHub Actions to create and approve pull requests` にチェックを入れる
 
-test20
+- test20
+- test21
