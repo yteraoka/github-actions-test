@@ -32,7 +32,7 @@ jobs:
           gitlogs_squashed=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
           echo "gitlogs_squashed=${gitlogs_squashed}" >> ${GITHUB_ENV}
       - name: git-pr-release
-        run:
+        run: |
           if [ ${{ env.gitlogs }} -lt 0 ] ; then
             git-pr-release
           elif [ ${{ env.gitlogs_squashed }} -lt 0 ] ; then
