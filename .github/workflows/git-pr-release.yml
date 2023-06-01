@@ -35,6 +35,10 @@ jobs:
         run: |
           diff=$(git diff origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -c)
           echo "diff=${diff}" >> ${GITHUB_ENV}
+      - name: check pr exists
+        run: |
+          pr_exists=$(gh pr list --base ${{ env.branch_production }} --head ${{ env.branch_staging }} | grep -c Release)
+          echo "pr_exists=${pr_exists}" >> ${GITHUB_ENV}
       - name: git-pr-release
         run: |
           if [ ${{ env.gitlogs }} -gt 0 ] ; then
@@ -42,9 +46,11 @@ jobs:
           elif [ ${{ env.gitlogs_squashed }} -gt 0 ] ; then
             git-pr-release --squashed
           elif [ ${{ env.diff }} -gt 0 ] ; then
-            gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
-              --title "Release $(date '+%Y-%m-%d %H:%M:%S %z')" \
-              --body "pr commit not found"
+            if [ ${{ env.pr_exists }} -eq 0 ] ; then
+              gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
+                --title "Release $(date '+%Y-%m-%d %H:%M:%S %z')" \
+                --body "pr commit not found"
+            fi
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
