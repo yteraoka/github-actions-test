@@ -33,9 +33,9 @@ jobs:
           echo "gitlogs_squashed=${gitlogs_squashed}" >> ${GITHUB_ENV}
       - name: git-pr-release
         run: |
-          if [ ${{ env.gitlogs }} -lt 0 ] ; then
+          if [ ${{ env.gitlogs }} -gt 0 ] ; then
             git-pr-release
-          elif [ ${{ env.gitlogs_squashed }} -lt 0 ] ; then
+          elif [ ${{ env.gitlogs_squashed }} -gt 0 ] ; then
             git-pr-release --squashed
           else
             gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
