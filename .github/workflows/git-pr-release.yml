@@ -31,13 +31,17 @@ jobs:
         run: |
           gitlogs_squashed=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
           echo "gitlogs_squashed=${gitlogs_squashed}" >> ${GITHUB_ENV}
+      - name: check git diff
+        run: |
+          diff=$(git diff origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -c)
+          echo "diff=${diff}" >> ${GITHUB_ENV}
       - name: git-pr-release
         run: |
           if [ ${{ env.gitlogs }} -gt 0 ] ; then
             git-pr-release
           elif [ ${{ env.gitlogs_squashed }} -gt 0 ] ; then
             git-pr-release --squashed
-          else
+          elif [ ${{ env.diff }} -gt 0 ] ; then
             gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
               --title "Release $(date '+%Y-%m-%d %H:%M:%S %z')" \
               --body "pr commit not found"
