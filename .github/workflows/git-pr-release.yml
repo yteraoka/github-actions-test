@@ -43,6 +43,7 @@ jobs:
 
       - name: check pr exists
         run: |
+          set +e
           pr_exists=$(gh pr list --base ${{ env.branch_production }} --head ${{ env.branch_staging }} | grep -c Release)
           echo "pr_exists=${pr_exists}" >> ${GITHUB_ENV}
         env:
