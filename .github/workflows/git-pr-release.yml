@@ -18,29 +18,48 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # git-pr-release needs the git histories
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2
           bundler-cache: true
+
       - run: gem install --no-document git-pr-release
+
       - name: check git log
         run: |
           gitlogs=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
           echo "gitlogs=${gitlogs}" >> ${GITHUB_ENV}
+
       - name: check git log squashed
         run: |
           gitlogs_squashed=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
           echo "gitlogs_squashed=${gitlogs_squashed}" >> ${GITHUB_ENV}
+
+      - name: check git diff
+        run: |
+          diff=$(git diff origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -c)
+          echo "diff=${diff}" >> ${GITHUB_ENV}
+
+      - name: check pr exists
+        run: |
+          pr_exists=$(gh pr list --base ${{ env.branch_production }} --head ${{ env.branch_staging }} | grep -c Release)
+          echo "pr_exists=${pr_exists}" >> ${GITHUB_ENV}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: git-pr-release
         run: |
           if [ ${{ env.gitlogs }} -gt 0 ] ; then
             git-pr-release
           elif [ ${{ env.gitlogs_squashed }} -gt 0 ] ; then
             git-pr-release --squashed
-          else
-            gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
-              --title "Release $(date '+%Y-%m-%d %H:%M:%S %z')" \
-              --body "pr commit not found"
+          elif [ ${{ env.diff }} -gt 0 ] ; then
+            if [ ${{ env.pr_exists }} -eq 0 ] ; then
+              gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
+                --title "Release $(date '+%Y-%m-%d %H:%M:%S %z')" \
+                --body "pr commit not found"
+            fi
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
