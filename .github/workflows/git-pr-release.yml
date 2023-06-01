@@ -6,6 +6,10 @@ on:
     branches:
       - develop
 
+env:
+  branch_production: main
+  branch_staging: develop
+
 jobs:
   git-pr-release:
     name: git-pr-release
@@ -19,10 +23,29 @@ jobs:
           ruby-version: 3.2
           bundler-cache: true
       - run: gem install --no-document git-pr-release
-      - run: git-pr-release --squashed
+      - name: check git log
+        run: |
+          gitlogs=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
+          echo "gitlogs=${gitlogs}" >> ${GITHUB_ENV}
+      - name: check git log squashed
+        run: |
+          gitlogs_squashed=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
+          echo "gitlogs_squashed=${gitlogs_squashed}" >> ${GITHUB_ENV}
+      - name: git-pr-release
+        run: |
+          if [ ${{ env.gitlogs }} -gt 0 ] ; then
+            git-pr-release
+          elif [ ${{ env.gitlogs_squashed }} -gt 0 ] ; then
+            git-pr-release --squashed
+          else
+            gh pr create --base ${{ env.branch_production }} --head ${{ env.branch_staging }} \
+              --title "Release $(date '+%Y-%m-%d %H:%M:%S %z')" \
+              --body "pr commit not found"
+          fi
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_PR_RELEASE_BRANCH_PRODUCTION: main
-          GIT_PR_RELEASE_BRANCH_STAGING: develop
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: ${{ env.branch_production }}
+          GIT_PR_RELEASE_BRANCH_STAGING: ${{ env.branch_staging }}
           GIT_PR_RELEASE_LABELS: pr-release
           TZ: Asia/Tokyo
