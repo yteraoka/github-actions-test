@@ -28,12 +28,12 @@ jobs:
 
       - name: check git log
         run: |
-          gitlogs=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
+          gitlogs=$(git log --merges --pretty=format:%P origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
           echo "gitlogs=${gitlogs}" >> ${GITHUB_ENV}
 
       - name: check git log squashed
         run: |
-          gitlogs_squashed=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -l)
+          gitlogs_squashed=$(git log --pretty=format:%h --abbrev=7 --no-merges --first-parent origin/${{ env.branch_production }}..origin/${{ env.branch_staging }} | wc -c)
           echo "gitlogs_squashed=${gitlogs_squashed}" >> ${GITHUB_ENV}
 
       - name: check git diff
