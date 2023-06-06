@@ -12,3 +12,4 @@ Workflow 内で write 操作や Pull Request を作成したり承認したり�
 `Allow GitHub Actions to create and approve pull requests` にチェックを入れる
 
 - a123
+  - abc
